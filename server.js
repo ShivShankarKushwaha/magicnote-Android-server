@@ -104,6 +104,10 @@ app.post("/login", async (req, res) =>
 app.post("/androidgooglesign",async(req,res)=>
 {
     try {
+        if(process.env.API!==req.body.userInfo.API)
+        {
+            return res.status(300).json({message:'unauthorized access'});
+        }
         let data =req.body.userInfo;
         const {name,email}=data.user;
         let responce = await User.findOne({email:email});
@@ -115,9 +119,12 @@ app.post("/androidgooglesign",async(req,res)=>
         }
         else
         {
+            let pass = await PinGenerator();
+            const password = encryption(pass);
             let user =new User({
                 name:name,
-                email:email
+                email:email,
+                password:password
             });
             await user.save();
             req.session.email = email;
