@@ -101,7 +101,33 @@ app.post("/login", async (req, res) =>
     }
     res.status(404).json({ status: "User Not found" });
 });
-
+app.post("/androidgooglesign",async(req,res)=>
+{
+    try {
+        let data =req.body.userInfo;
+        const {name,email}=data.user;
+        let responce = await User.findOne({email:email});
+        if(responce)
+        {
+            req.session.email=email;
+            let token = signjwt(email);
+            return res.status(200).json({message:'user logged in',token:token})
+        }
+        else
+        {
+            let user =new User({
+                name:name,
+                email:email
+            });
+            await user.save();
+            req.session.email = email;
+            let token = signjwt(email);
+            return res.status(200).json({ message: 'user signed up', token: token })
+        }
+    } catch (error) {
+        return res.status(300).json({message:'Something error occured',error})
+    }
+})
 app.post("/user", (req, res) =>
 {
     if (req.session.email) {
